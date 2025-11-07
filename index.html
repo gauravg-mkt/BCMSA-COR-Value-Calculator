@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCMSA COR Value Calculator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use BCMSA Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bcmsa-primary': '#266092', // Dark Blue
+                        'bcmsa-secondary': '#5c6670', // Grey
+                        'bcmsa-accent': '#FFD700', // Gold for visibility
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Styles for Input Focus and general clarity */
+        input[type="number"] {
+            -moz-appearance: textfield; /* Firefox */
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center mb-10 p-6 bg-bcmsa-primary rounded-xl shadow-lg">
+            <h1 class="text-3xl sm:text-4xl font-bold text-white mb-1">COR Value & ROI Calculator</h1>
+            <p class="text-white text-opacity-80">Estimate the financial benefit of a strong safety management system.</p>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Input Panel -->
+            <div class="lg:col-span-2 p-6 bg-white rounded-xl shadow-lg border border-gray-200 h-fit">
+                <h2 class="text-2xl font-semibold mb-6 text-bcmsa-secondary">1. Organization Metrics</h2>
+                <form id="roi-form" class="space-y-6">
+
+                    <!-- Input 1: Employees -->
+                    <div>
+                        <label for="employees" class="block text-sm font-medium text-gray-700 mb-1">Number of Employees (FTE)</label>
+                        <input type="number" id="employees" placeholder="e.g., 250" value="250" required min="1"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-bcmsa-primary focus:border-bcmsa-primary">
+                        <p class="mt-1 text-xs text-gray-500">Used to calculate total wage base for premium estimation.</p>
+                    </div>
+
+                    <!-- Input 2: Current WorkSafeBC Rate -->
+                    <div>
+                        <label for="rate" class="block text-sm font-medium text-gray-700 mb-1">Current WorkSafeBC Base Rate (%)</label>
+                        <input type="number" id="rate" placeholder="e.g., 1.50" value="1.50" required min="0.01" step="0.01"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-bcmsa-primary focus:border-bcmsa-primary">
+                        <p class="mt-1 text-xs text-gray-500">Your organization's current claims or industry rate (as a percentage).</p>
+                    </div>
+
+                    <!-- Input 3: Safety Investment Cost -->
+                    <div>
+                        <label for="cost" class="block text-sm font-medium text-gray-700 mb-1">Annual Safety Investment Cost ($)</label>
+                        <input type="number" id="cost" placeholder="e.g., 15000" value="15000" required min="0"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-bcmsa-primary focus:border-bcmsa-primary">
+                        <p class="mt-1 text-xs text-gray-500">Current annual spending on training, OHS software, and consultants.</p>
+                    </div>
+
+                    <div class="pt-4">
+                         <button type="button" onclick="calculateROI()"
+                            class="w-full bg-bcmsa-primary text-white py-3 rounded-lg font-semibold hover:bg-bcmsa-secondary transition duration-150 shadow-md">
+                            Calculate Potential Value
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="lg:col-span-1 p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+                <h2 class="text-2xl font-semibold mb-6 text-bcmsa-secondary">2. Estimated Annual Value</h2>
+
+                <div id="results" class="space-y-4">
+                    <!-- Initial State Message -->
+                    <p class="text-gray-600 text-center py-8" id="initial-message">Enter your metrics and click 'Calculate' to see the estimated ROI.</p>
+
+                    <!-- Calculated Results will go here -->
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Assumptions & Methodology -->
+        <div class="mt-8 p-6 bg-gray-100 rounded-xl shadow-inner">
+            <h3 class="text-xl font-semibold mb-4 text-bcmsa-primary flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Calculation Assumptions
+            </h3>
+            <p class="text-sm text-gray-700 mb-4">This tool provides an estimate. Actual savings are subject to WorkSafeBC policies and your organization's specific performance.</p>
+            <ul class="list-disc list-inside text-sm text-gray-700 space-y-2 pl-4">
+                <li>**Average Wage:** Assumes a standard average municipal employee wage of **$70,000 per year** to estimate the total annual assessable payroll (WorkSafeBC Premium Base).</li>
+                <li>**Rebate Value:** Assumes COR certification qualifies the organization for the highest tier of WorkSafeBC's **Partners Program rebate (10%)** of the assessable premium.</li>
+                <li>**Claims Reduction:** Assumes the COR safety system leads to a conservative **5% reduction** in the organization's claims costs (rate adjustment savings).</li>
+                <li>**Productivity Gains:** Assumes an additional **$50 per employee** saved annually through reduced administrative costs, less downtime, and improved safety culture.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        const AVERAGE_ANNUAL_WAGE = 70000;
+        const PARTNERS_PROGRAM_REBATE_RATE = 0.10; // 10%
+        const CLAIMS_REDUCTION_RATE = 0.05; // 5%
+        const PRODUCTIVITY_GAIN_PER_EMPLOYEE = 50;
+
+        // Utility to format numbers as Canadian currency
+        const formatter = new Intl.NumberFormat('en-CA', {
+            style: 'currency',
+            currency: 'CAD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        });
+
+        function calculateROI() {
+            const employees = parseFloat(document.getElementById('employees').value);
+            const rate = parseFloat(document.getElementById('rate').value);
+            const cost = parseFloat(document.getElementById('cost').value);
+            const resultsDiv = document.getElementById('results');
+
+            // Basic Input Validation
+            if (isNaN(employees) || isNaN(rate) || isNaN(cost) || employees < 1 || rate <= 0 || cost < 0) {
+                resultsDiv.innerHTML = `<p class="text-red-600 text-center py-8">Please enter valid, positive numbers for all fields.</p>`;
+                console.error("Invalid input detected.");
+                return;
+            }
+
+            try {
+                // 1. Calculate the Estimated Annual Assessable Premium (P)
+                // Premium = Employees * Avg Wage * (Rate / 100)
+                const totalPayroll = employees * AVERAGE_ANNUAL_WAGE;
+                const estimatedPremium = totalPayroll * (rate / 100);
+
+                // 2. Calculate the Rebate Value (V)
+                // Value = Premium * 10%
+                const rebateValue = estimatedPremium * PARTNERS_PROGRAM_REBATE_RATE;
+
+                // 3. Calculate the Claims Reduction Savings (S)
+                // Savings = Premium * 5%
+                const claimsSavings = estimatedPremium * CLAIMS_REDUCTION_RATE;
+
+                // 4. Calculate Productivity Gains (G)
+                const productivityGains = employees * PRODUCTIVITY_GAIN_PER_EMPLOYEE;
+
+                // 5. Total Value (T)
+                const totalAnnualValue = rebateValue + claimsSavings + productivityGains;
+
+                // 6. Net ROI
+                const netROI = totalAnnualValue - cost;
+                
+                // Determine ROI message and color
+                let roiMessage = "";
+                let roiColor = "text-bcmsa-primary";
+                if (netROI > 0) {
+                    roiMessage = "Net Gain";
+                    roiColor = "text-green-600";
+                } else if (netROI < 0) {
+                    roiMessage = "Net Investment Required";
+                    roiColor = "text-red-600";
+                } else {
+                    roiMessage = "Breakeven";
+                    roiColor = "text-bcmsa-secondary";
+                }
+
+
+                // Update Results HTML
+                resultsDiv.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex justify-between border-b pb-1">
+                            <span class="text-gray-700">Estimated Annual Premium:</span>
+                            <span class="font-medium">${formatter.format(estimatedPremium)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-bcmsa-primary font-medium">Rebate Value (10% of Premium):</span>
+                            <span class="text-bcmsa-primary font-medium">${formatter.format(rebateValue)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-700">Claims Reduction Savings (5%):</span>
+                            <span class="font-medium">${formatter.format(claimsSavings)}</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-4">
+                            <span class="text-gray-700">Productivity Gains:</span>
+                            <span class="font-medium">${formatter.format(productivityGains)}</span>
+                        </div>
+
+                        <div class="flex justify-between pt-4 text-lg">
+                            <span class="font-bold text-gray-800">TOTAL ESTIMATED VALUE:</span>
+                            <span class="font-bold text-bcmsa-primary">${formatter.format(totalAnnualValue)}</span>
+                        </div>
+                        
+                        <div class="flex justify-between text-base">
+                            <span class="font-medium text-gray-600">Minus Annual Investment Cost:</span>
+                            <span class="font-medium text-gray-600">(${formatter.format(cost)})</span>
+                        </div>
+
+                        <div class="pt-4 border-t-2 border-dashed border-gray-300"></div>
+
+                        <div class="flex justify-between items-center pt-2">
+                            <span class="font-extrabold text-xl text-gray-800">NET ANNUAL ROI:</span>
+                            <span class="font-extrabold text-2xl ${roiColor}">${formatter.format(netROI)}</span>
+                        </div>
+                        <p class="text-center text-sm ${roiColor} font-semibold">${roiMessage}</p>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error("Calculation Error:", error);
+                resultsDiv.innerHTML = `<p class="text-red-600 text-center py-8">An unexpected error occurred during calculation.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
